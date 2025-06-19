@@ -1,17 +1,18 @@
-import express from 'express';
-import "dotenv/config";
+import express from "express";
+import { login, logout, onboard, signup } from "../controllers/auth.controller.js";
+import { protectRoute } from "../middleware/auth.middleware.js";
 
-import authRoutes from './routes/auth.route.js';
-import { connectDB } from './lib/db.js';
+const router = express.Router();
 
-const app = express();
-const PORT = process.env.PORT;
+router.post("/signup", signup);
+router.post("/login", login);
+router.post("/logout", logout);
 
-app.use(express.json());
+router.post("/onboarding", protectRoute, onboard);
 
-app.use("/api/auth", authRoutes);
-
-app.listen(PORT, () => {
-  console.log('Server is running on http://localhost:5001');
-  connectDB();
+// check if user is logged in
+router.get("/me", protectRoute, (req, res) => {
+  res.status(200).json({ success: true, user: req.user });
 });
+
+export default router;
