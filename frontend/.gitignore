@@ -28,7 +28,7 @@ dist-ssr
 
 # Ignore other common clutter
 .DS_Store
-.env
+
 dist/
 build/
 npm-debug.log
