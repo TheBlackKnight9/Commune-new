@@ -14,7 +14,7 @@ const userSchema = new mongoose.Schema({
     password: {
         type: String,
         required: true,
-        minlenght: 6,
+        minlength: 6,
     },
     bio: {
         type: String,
@@ -32,7 +32,7 @@ const userSchema = new mongoose.Schema({
         type: String,
         default: "",
     },  
-    loacation: {
+    location: {
         type: String,
         default: "",
     },
@@ -53,7 +53,7 @@ userSchema.pre("save", async function(next) {
     if (!this.isModified("password")) return next();
     try {
         const salt = await bcrypt.genSalt(10);
-        this.password - await bcrypt.hash(this.password, salt);
+        this.password = await bcrypt.hash(this.password, salt);
         
         next();
     } catch (error) {
@@ -62,6 +62,14 @@ userSchema.pre("save", async function(next) {
 });
 
 userSchema.methods.matchPassword = async function (enteredPassword) {
+    // Backward compatibility for users created before password hashing bug was fixed.
+    if (!this.password) return false;
+
+    const isBcryptHash = /^\$2[aby]\$\d{2}\$/.test(this.password);
+    if (!isBcryptHash) {
+        return enteredPassword === this.password;
+    }
+
     const isPasswordCorrect = await bcrypt.compare(enteredPassword, this.password);
     return isPasswordCorrect;
 };
